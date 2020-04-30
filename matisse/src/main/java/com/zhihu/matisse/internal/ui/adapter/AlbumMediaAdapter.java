@@ -67,12 +67,17 @@ public class AlbumMediaAdapter extends
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         if (viewType == VIEW_TYPE_CAPTURE) {
             View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.photo_capture_item, parent, false);
+            if (mSelectionSpec.record) {
+                TextView hint = v.findViewById(R.id.hint);
+                hint.setText("拍摄视频");
+            }
             CaptureViewHolder holder = new CaptureViewHolder(v);
-            holder.itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (v.getContext() instanceof OnPhotoCapture) {
+            holder.itemView.setOnClickListener(v1 -> {
+                if (v1.getContext() instanceof OnPhotoCapture) {
+                    if (!mSelectionSpec.record) {
                         ((OnPhotoCapture) v.getContext()).capture();
+                    } else {
+                        ((OnPhotoRecord) v.getContext()).record();
                     }
                 }
             });
@@ -274,6 +279,10 @@ public class AlbumMediaAdapter extends
 
     public interface OnPhotoCapture {
         void capture();
+    }
+
+    public interface OnPhotoRecord {
+        void record();
     }
 
     private static class MediaViewHolder extends RecyclerView.ViewHolder {

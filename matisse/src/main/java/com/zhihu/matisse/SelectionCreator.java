@@ -368,4 +368,26 @@ public final class SelectionCreator {
         mSelectionSpec.showPreview = showPreview;
         return this;
     }
+
+
+    /**
+     * 新增方法  显示视频录制
+     * @param enable
+     * @return
+     */
+    public SelectionCreator record(boolean enable) {
+        mSelectionSpec.recordMin = 1 * 1000;
+        mSelectionSpec.recordMax = 60 * 1000;
+        mSelectionSpec.record = enable;
+        if (enable)
+            mSelectionSpec.capture = false;
+        return this;
+    }
+
+    public SelectionCreator record(int min, int max) {
+        mSelectionSpec.recordMin = min;
+        mSelectionSpec.recordMax = max;
+        return this;
+    }
+
 }

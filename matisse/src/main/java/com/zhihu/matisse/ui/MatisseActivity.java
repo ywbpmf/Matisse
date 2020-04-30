@@ -21,9 +21,11 @@ import android.content.res.TypedArray;
 import android.database.Cursor;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import androidx.annotation.Nullable;
@@ -32,13 +34,17 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.mabeijianxi.smallvideorecord2.JianXiCamera;
+import com.mabeijianxi.smallvideorecord2.model.MediaRecorderConfig;
 import com.zhihu.matisse.R;
 import com.zhihu.matisse.internal.entity.Album;
 import com.zhihu.matisse.internal.entity.Item;
@@ -59,7 +65,12 @@ import com.zhihu.matisse.internal.utils.PathUtils;
 import com.zhihu.matisse.internal.utils.PhotoMetadataUtils;
 
 import com.zhihu.matisse.internal.utils.SingleMediaScanner;
+
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+
+import io.third.MediaRecorderActivity;
 
 /**
  * Main Activity to display albums and media content (images/videos) in each album
@@ -69,7 +80,7 @@ public class MatisseActivity extends AppCompatActivity implements
         AlbumCollection.AlbumCallbacks, AdapterView.OnItemSelectedListener,
         MediaSelectionFragment.SelectionProvider, View.OnClickListener,
         AlbumMediaAdapter.CheckStateListener, AlbumMediaAdapter.OnMediaClickListener,
-        AlbumMediaAdapter.OnPhotoCapture {
+        AlbumMediaAdapter.OnPhotoCapture, AlbumMediaAdapter.OnPhotoRecord {
 
     public static final String EXTRA_RESULT_SELECTION = "extra_result_selection";
     public static final String EXTRA_RESULT_SELECTION_PATH = "extra_result_selection_path";
@@ -243,6 +254,41 @@ public class MatisseActivity extends AppCompatActivity implements
                     Log.i("SingleMediaScanner", "scan finish!");
                 }
             });
+            finish();
+        } else if (requestCode == 1111) {
+            String url = data.getStringExtra("url");
+            if (TextUtils.isEmpty(url))
+                Toast.makeText(this, "录制视频有误", Toast.LENGTH_SHORT).show();
+            Intent result = new Intent();
+            Uri uri = Uri.fromFile(new File(url));
+
+
+            try {
+                MediaPlayer mediaPlayer = new MediaPlayer();
+                mediaPlayer.setDataSource(this, uri);
+                mediaPlayer.prepare();
+                long time = mediaPlayer.getDuration();
+                if (time < mSpec.recordMin) {
+                    int sec = mSpec.recordMin / 1000;
+                    Toast.makeText(this, "时长不能低于" + (sec > 60 ? ((sec / 60) + "分钟") : (sec + "秒")), Toast.LENGTH_SHORT).show();
+                    return;
+                }
+            } catch (IOException e) {
+
+            }
+
+
+            ArrayList<Uri> selectedUris = new ArrayList<>();
+            selectedUris.add(uri);
+
+            ArrayList<String> selectedPaths = new ArrayList<>();
+            selectedPaths.add(url);
+
+            result.putParcelableArrayListExtra(EXTRA_RESULT_SELECTION, selectedUris);
+            result.putStringArrayListExtra(EXTRA_RESULT_SELECTION_PATH, selectedPaths);
+            result.putExtra(EXTRA_RESULT_ORIGINAL_ENABLE, false);
+//            result.putExtra("INDEX", index);  // android10 null
+            setResult(RESULT_OK, result);
             finish();
         }
     }
@@ -434,4 +480,30 @@ public class MatisseActivity extends AppCompatActivity implements
         }
     }
 
+
+    private MediaRecorderConfig config;
+
+    public void initSmallVideo() {
+
+        String filePath = Environment.getExternalStorageDirectory().getPath() + "/mingchu" + "/video/";
+        JianXiCamera.setVideoCachePath(filePath);
+        JianXiCamera.initialize(false, null);
+        config = new MediaRecorderConfig.Buidler()
+                .fullScreen(false)
+                .smallVideoWidth(360)
+                .smallVideoHeight(480)
+                .recordTimeMax(mSpec.recordMax)
+                .recordTimeMin(mSpec.recordMin)
+                .maxFrameRate(20)
+                .videoBitrate(600000)
+                .captureThumbnailsTime(1)
+                .build();
+    }
+
+    @Override
+    public void record() {
+        if (config == null)
+            initSmallVideo();
+        MediaRecorderActivity.goSmallVideoRecorder(this, config);
+    }
 }

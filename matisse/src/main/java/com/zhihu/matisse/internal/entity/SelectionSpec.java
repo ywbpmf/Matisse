@@ -58,6 +58,10 @@ public final class SelectionSpec {
     public OnCheckedListener onCheckedListener;
     public boolean showPreview;
 
+    public boolean record;
+    public int recordMin = 1 * 1000;
+    public int recordMax = 1000 * 60;
+
     private SelectionSpec() {
     }
 

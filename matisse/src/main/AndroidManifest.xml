@@ -25,5 +25,9 @@
         <activity android:name="com.zhihu.matisse.ui.MatisseActivity"/>
         <activity android:name="com.zhihu.matisse.internal.ui.AlbumPreviewActivity"/>
         <activity android:name="com.zhihu.matisse.internal.ui.SelectedPreviewActivity"/>
+        <!-- 视频录制 -->
+        <activity
+            android:name="io.third.MediaRecorderActivity"
+            android:screenOrientation="portrait" />
     </application>
 </manifest>
