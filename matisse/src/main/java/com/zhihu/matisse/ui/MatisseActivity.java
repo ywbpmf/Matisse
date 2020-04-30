@@ -104,11 +104,18 @@ public class MatisseActivity extends AppCompatActivity implements
     private CheckRadioView mOriginal;
     private boolean mOriginalEnable;
 
+    private int index = -1;
+
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         // programmatically set theme before super.onCreate()
         mSpec = SelectionSpec.getInstance();
         setTheme(mSpec.themeId);
+        Intent intent = getIntent();
+        if (intent.hasExtra("INDEX")){
+            index   = intent.getIntExtra("INDEX",0);
+        }
         super.onCreate(savedInstanceState);
         if (!mSpec.hasInited) {
             setResult(RESULT_CANCELED);
@@ -244,6 +251,7 @@ public class MatisseActivity extends AppCompatActivity implements
             Intent result = new Intent();
             result.putParcelableArrayListExtra(EXTRA_RESULT_SELECTION, selected);
             result.putStringArrayListExtra(EXTRA_RESULT_SELECTION_PATH, selectedPath);
+            result.putExtra("INDEX", index);
             setResult(RESULT_OK, result);
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP)
                 MatisseActivity.this.revokeUriPermission(contentUri,
@@ -287,7 +295,7 @@ public class MatisseActivity extends AppCompatActivity implements
             result.putParcelableArrayListExtra(EXTRA_RESULT_SELECTION, selectedUris);
             result.putStringArrayListExtra(EXTRA_RESULT_SELECTION_PATH, selectedPaths);
             result.putExtra(EXTRA_RESULT_ORIGINAL_ENABLE, false);
-//            result.putExtra("INDEX", index);  // android10 null
+            result.putExtra("INDEX", index);
             setResult(RESULT_OK, result);
             finish();
         }
@@ -364,6 +372,9 @@ public class MatisseActivity extends AppCompatActivity implements
             startActivityForResult(intent, REQUEST_CODE_PREVIEW);
         } else if (v.getId() == R.id.button_apply) {
             Intent result = new Intent();
+            if (index != -1){
+                result.putExtra("INDEX",index);
+            }
             ArrayList<Uri> selectedUris = (ArrayList<Uri>) mSelectedCollection.asListOfUri();
             result.putParcelableArrayListExtra(EXTRA_RESULT_SELECTION, selectedUris);
             ArrayList<String> selectedPaths = (ArrayList<String>) mSelectedCollection.asListOfString();

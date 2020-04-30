@@ -364,6 +364,22 @@ public final class SelectionCreator {
         }
     }
 
+    public void forResult(int requestCode,int index) {
+        Activity activity = mMatisse.getActivity();
+        if (activity == null) {
+            return;
+        }
+
+        Intent intent = new Intent(activity, MatisseActivity.class);
+        intent.putExtra("INDEX",index);
+        Fragment fragment = mMatisse.getFragment();
+        if (fragment != null) {
+            fragment.startActivityForResult(intent, requestCode);
+        } else {
+            activity.startActivityForResult(intent, requestCode);
+        }
+    }
+
     public SelectionCreator showPreview(boolean showPreview) {
         mSelectionSpec.showPreview = showPreview;
         return this;
