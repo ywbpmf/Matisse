@@ -199,6 +199,8 @@ public final class SelectionCreator {
      */
     public SelectionCreator capture(boolean enable) {
         mSelectionSpec.capture = enable;
+        if (enable)
+            mSelectionSpec.record = false;
         return this;
     }
 
